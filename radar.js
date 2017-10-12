@@ -283,13 +283,14 @@ var RadarChart = {
 
 
     // builds out the axes labels
+    // [CodeReview] Invertir sentido de despliegue de las etiquetas de número
     function buildAxesLabels() {
       vis.axes
         .data(vis.allAxis).enter()
         .append("svg:text").classed("axis-labels", true)
         .text(function(d) { return d; })
         .attr("text-anchor", "middle")
-        .attr("x", function(d, i) { return config.w / 2 * (1 - 1.1 * Math.sin(i * config.radians / vis.totalAxes)); })
+        .attr("x", function(d, i) { return config.w / 2 * (1 - 1.1 * Math.sin((-1) * i * config.radians / vis.totalAxes)); })
         .attr("y", function(d, i) { return config.h / 2 * (1 - 1.1 * Math.cos(i * config.radians / vis.totalAxes)); })
         .attr("font-family", "sans-serif")
         .attr("font-size", 11 * config.labelScale + "px");
@@ -297,11 +298,12 @@ var RadarChart = {
 
 
     // builds [x, y] coordinates of polygon vertices.
+    // [CodeReview] Invertir sentido de despliegue de los círculos
     function buildCoordinates(data) {
       data.forEach(function(group) {
         group.axes.forEach(function(d, i) {
           d.coordinates = { // [x, y] coordinates
-            x: config.w / 2 * (1 - (parseFloat(Math.max(d.value, 0)) / config.maxValue) * Math.sin(i * config.radians / vis.totalAxes)),
+            x: config.w / 2 * (1 - (parseFloat(Math.max(d.value, 0)) / config.maxValue) * Math.sin((-1) * i * config.radians / vis.totalAxes)),
             y: config.h / 2 * (1 - (parseFloat(Math.max(d.value, 0)) / config.maxValue) * Math.cos(i * config.radians / vis.totalAxes))
           };
         });

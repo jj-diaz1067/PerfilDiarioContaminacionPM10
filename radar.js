@@ -9,7 +9,12 @@
  *
  **/
 
-
+/**
+Pablo Andres Boada: Dado que cada area se encuentra muy cerca una de la otra y las tonalidades de colores son similares entre los años
+no es posible identificar algunos años, por lo que recomendaria implementar dentro de esta funcion la opcion de pasar sobre el label
+del año y que sea unicamente el area correspondiente a este año el que se dibuje.  Esto permite ver claramente años como el 2009 y 
+comparar contra el limite de la organizacion mundial de la salud.
+**/
 
 
 

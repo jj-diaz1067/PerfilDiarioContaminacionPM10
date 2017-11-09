@@ -10,18 +10,11 @@
 <body class="container ng-scope" ng-controller="MainCtrl as radar">
 
 <div class = "container">
-    <h1>La contaminación en Bogotá ha bajado, pero no es seguro respirar a cualquier hora del día</h1>
-    <p> El contaminante conocido como PM10, hace referencia a todo el polvo suspendido en la atmosfera cuyo tamaño es menor a 10 micras,
-        este es un containante que se puede respirar y entrar a los pulmones, ocasionando daños en el largo plazo.</p>
-
-    <p> Un analísis del perfil diario de concentración de PM10, promediando todas las estaciones de la red de monitoreo,
-        revela que la ciudad ha ido mejorando con los años, sin embargo es posible ver que existe un pico de contaminación entre las 7:00 y 8:00 de la mañana,
-        en donde la contaminación promedio de la ciudad excede el límite del promedio diario de exposición de la organización mundial de la salud.</p>
     <div class="visualization">
         <div class="row justify-content-center">
             <div class="col-3"></div>
             <div class="col-6">
-                <h3>Perfil diario de PM10 a lo largo de los años</h3>
+                <h3>Perfil diario de PM₁₀ a lo largo de los años</h3>
                 <radar csv="datosPerfilDiario.csv" config="radar.config" class="ng-isolate-scope">
                 </radar>
             </div>

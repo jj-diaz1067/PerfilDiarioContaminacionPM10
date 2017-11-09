@@ -30,11 +30,11 @@ var RadarChart = {
       w: w,
       h: h,
       facet: false,
-      levels: 5,
+      levels: 9,
       levelScale: 0.85,
       labelScale: 1.0,
       facetPaddingScale: 2.5,
-      maxValue: 0,
+      maxValue: 120,
       radians: 2 * Math.PI,
       polygonAreaOpacity: 0.5,
       polygonStrokeOpacity: 1,
@@ -77,10 +77,6 @@ var RadarChart = {
     }
 
     render(data); // render the visualization
-
-
-
-
 
     /** helper functions
      *
@@ -128,6 +124,7 @@ var RadarChart = {
       config.maxValue = Math.max(config.maxValue, d3.max(data, function(d) {
         return d3.max(d.axes, function(o) { return o.value; });
       }));
+      config.levels = Math.ceil(config.maxValue/10);
       config.w *= config.levelScale;
       config.h *= config.levelScale;
       config.paddingX = config.w * config.levelScale;
@@ -219,12 +216,6 @@ var RadarChart = {
           .attr("font-size", 30 * config.labelScale + "px")
           .attr("font-color","black");
 
-
-      vis.whoLabel = vis.svg.append("svg:text").classed("whoLabel", true)
-          .attr("font-family", "sans-serif")
-          .attr("fill", "red")
-          .attr("font-family", "sans-serif")
-          .attr("font-size", 10 * config.labelScale + "px");
     }
 
 
@@ -257,7 +248,7 @@ var RadarChart = {
         vis.levels
           .data([1]).enter()
           .append("svg:text").classed("level-labels", true)
-          .text((config.maxValue * (level + 1) / config.levels).toFixed(2))
+          .text(Math.round((config.maxValue * (level + 1) / config.levels).toFixed(2)) + " µg/m³")
           .attr("x", function(d) { return levelFactor * (1 - Math.sin(0)); })
           .attr("y", function(d) { return levelFactor * (1 - Math.cos(0)); })
           .attr("transform", "translate(" + (config.w / 2 - levelFactor + 5) + ", " + (config.h / 2 - levelFactor) + ")")
@@ -275,7 +266,7 @@ var RadarChart = {
         .append("svg:line").classed("axis-lines", true)
         .attr("x1", config.w / 2)
         .attr("y1", config.h / 2)
-        .attr("x2", function(d, i) { return config.w / 2 * (1 - Math.sin(i * config.radians / vis.totalAxes)); })
+        .attr("x2", function(d, i) { return config.w / 2 * (1 + Math.sin(i * config.radians / vis.totalAxes)); })
         .attr("y2", function(d, i) { return config.h / 2 * (1 - Math.cos(i * config.radians / vis.totalAxes)); })
         .attr("stroke", "grey")
         .attr("stroke-width", "1px");
@@ -287,12 +278,12 @@ var RadarChart = {
       vis.axes
         .data(vis.allAxis).enter()
         .append("svg:text").classed("axis-labels", true)
-        .text(function(d) { return d; })
+        .text(function(d) { return d+":00"; })
         .attr("text-anchor", "middle")
-        .attr("x", function(d, i) { return config.w / 2 * (1 - 1.1 * Math.sin(i * config.radians / vis.totalAxes)); })
+        .attr("x", function(d, i) { return config.w / 2 * (1 + 1.1 * Math.sin(i * config.radians / vis.totalAxes)); })
         .attr("y", function(d, i) { return config.h / 2 * (1 - 1.1 * Math.cos(i * config.radians / vis.totalAxes)); })
         .attr("font-family", "sans-serif")
-        .attr("font-size", 11 * config.labelScale + "px");
+        .attr("font-size", 12* config.labelScale + "px");
     }
 
 
@@ -301,7 +292,7 @@ var RadarChart = {
       data.forEach(function(group) {
         group.axes.forEach(function(d, i) {
           d.coordinates = { // [x, y] coordinates
-            x: config.w / 2 * (1 - (parseFloat(Math.max(d.value, 0)) / config.maxValue) * Math.sin(i * config.radians / vis.totalAxes)),
+            x: config.w / 2 * (1 + (parseFloat(Math.max(d.value, 0)) / config.maxValue) * Math.sin(i * config.radians / vis.totalAxes)),
             y: config.h / 2 * (1 - (parseFloat(Math.max(d.value, 0)) / config.maxValue) * Math.cos(i * config.radians / vis.totalAxes))
           };
         });
@@ -339,48 +330,36 @@ var RadarChart = {
         .attr("stroke", function(d, i) { return config.colors(i); })
         .attr("fill", function(d, i) { return config.colors(i); })
         .attr("fill-opacity", config.polygonAreaOpacity)
-        .attr("stroke-opacity", config.polygonStrokeOpacity)
-        .on(over, function(d) {
-          vis.svg.selectAll(".polygon-areas") // fade all other polygons out
-          .transition(500)
-            .attr("fill-opacity", 0.1)
-            .attr("stroke-opacity", 0.1);
-          d3.select(this) // focus on active polygon
-          .transition(500)
-            .attr("fill-opacity", 0.7)
-            .attr("stroke-opacity", config.polygonStrokeOpacity);
-          vis.yearLabel //cambiar texto central
-              .text(d.group);
-        })
-        .on(out, function() {
-          d3.selectAll(".polygon-areas")
-            .transition(500)
-            .attr("fill-opacity", config.polygonAreaOpacity)
-            .attr("stroke-opacity", 1);
-          vis.yearLabel //cambiar texto central
-              .text("");
-        });
+        .attr("stroke-opacity", config.polygonStrokeOpacity);
     }
     //Guias de salud del who
     function buildWHOGuidelines(data) {
 
-      var nivelWho = vis.radius*50/config.maxValue;
-      vis.levels
-          .data(vis.allAxis).enter()
-          .append("svg:line").classed("wholevel-lines", true)
-          .attr("x1", function(d, i) { return nivelWho * (1 - Math.sin(i * config.radians / vis.totalAxes)); })
-          .attr("y1", function(d, i) { return nivelWho * (1 - Math.cos(i * config.radians / vis.totalAxes)); })
-          .attr("x2", function(d, i) { return nivelWho * (1 - Math.sin((i + 1) * config.radians / vis.totalAxes)); })
-          .attr("y2", function(d, i) { return nivelWho * (1 - Math.cos((i + 1) * config.radians / vis.totalAxes)); })
-          .attr("transform", "translate(" + (config.w / 2 - nivelWho) + ", " + (config.h / 2 - nivelWho) + ")")
-          .attr("stroke", "red")
-          .attr("stroke-width", "1px")
-          .attr("opacity",0.5);
+      limites = [100,50, 50,20];
+      labelLimites = ["Límite diario CO","Límite diario WHO" ,"Límite anual CO" ,"Límite anual WHO"];
 
-      vis.whoLabel
-          .text("Límite WHO")
-          .attr("transform", "translate(" + (config.w / 2 + 5) + ", " + (config.h / 2 - nivelWho) + ")")
+      for(var j= 0; j< limites.length; j++){
+        var nivelWho = vis.radius*limites[j]/config.maxValue;
+        vis.levels
+            .data(vis.allAxis).enter()
+            .append("svg:line").classed("wholevel-lines", true)
+            .attr("x1", function(d, i) { return nivelWho * (1 - Math.sin(i * config.radians / vis.totalAxes)); })
+            .attr("y1", function(d, i) { return nivelWho * (1 - Math.cos(i * config.radians / vis.totalAxes)); })
+            .attr("x2", function(d, i) { return nivelWho * (1 - Math.sin((i + 1) * config.radians / vis.totalAxes)); })
+            .attr("y2", function(d, i) { return nivelWho * (1 - Math.cos((i + 1) * config.radians / vis.totalAxes)); })
+            .attr("transform", "translate(" + (config.w / 2 - nivelWho) + ", " + (config.h / 2 - nivelWho) + ")")
+            .attr("stroke", "red")
+            .attr("stroke-width", "1px")
+            .attr("opacity",0.5);
 
+        vis.whoLabel = vis.svg.append("svg:text").classed("whoLabel", true)
+            .attr("font-family", "sans-serif")
+            .attr("fill", "brown")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10 * config.labelScale + "px")
+            .text(labelLimites[j])
+            .attr("transform", "translate(" + ((config.w/2) + Math.sin(10*Math.PI/12 - j*Math.PI/12)*nivelWho ) + ", " +( (config.h/2) +(Math.cos(10*Math.PI/12 - j*Math.PI/12)*nivelWho) )+ ")");
+      }
     }
 
 
@@ -407,7 +386,27 @@ var RadarChart = {
         .attr("fill", "gray")
         .text(function(d) {
           return d.group;
-        });
+        })
+          .on(over, function(d) {
+            vis.svg.selectAll(".polygon-areas") // fade all other polygons out
+                .transition(500)
+                .attr("fill-opacity", 0.1)
+                .attr("stroke-opacity", 0.1);
+            d3.select(this) // focus on active polygon
+                .transition(500)
+                .attr("fill-opacity", 0.7)
+                .attr("stroke-opacity", config.polygonStrokeOpacity);
+            vis.yearLabel //cambiar texto central
+                .text(d.group);
+          })
+          .on(out, function() {
+            d3.selectAll(".polygon-areas")
+                .transition(500)
+                .attr("fill-opacity", config.polygonAreaOpacity)
+                .attr("stroke-opacity", 1);
+            vis.yearLabel //cambiar texto central
+                .text("");
+          });
     }
 
 

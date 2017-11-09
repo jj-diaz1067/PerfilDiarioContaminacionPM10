@@ -330,7 +330,27 @@ var RadarChart = {
         .attr("stroke", function(d, i) { return config.colors(i); })
         .attr("fill", function(d, i) { return config.colors(i); })
         .attr("fill-opacity", config.polygonAreaOpacity)
-        .attr("stroke-opacity", config.polygonStrokeOpacity);
+        .attr("stroke-opacity", config.polygonStrokeOpacity)
+        .on(over, function(d) {
+          vis.svg.selectAll(".polygon-areas") // fade all other polygons out
+          .transition(500)
+            .attr("fill-opacity", 0.1)
+            .attr("stroke-opacity", 0.1);
+          d3.select(this) // focus on active polygon
+          .transition(500)
+            .attr("fill-opacity", 0.7)
+            .attr("stroke-opacity", config.polygonStrokeOpacity);
+          vis.yearLabel //cambiar texto central
+              .text(d.group);
+        })
+        .on(out, function() {
+          d3.selectAll(".polygon-areas")
+            .transition(500)
+            .attr("fill-opacity", config.polygonAreaOpacity)
+            .attr("stroke-opacity", 1);
+          vis.yearLabel //cambiar texto central
+              .text("");
+        });
     }
     //Guias de salud del who
     function buildWHOGuidelines(data) {
@@ -387,26 +407,6 @@ var RadarChart = {
         .text(function(d) {
           return d.group;
         })
-          .on(over, function(d) {
-            vis.svg.selectAll(".polygon-areas") // fade all other polygons out
-                .transition(500)
-                .attr("fill-opacity", 0.1)
-                .attr("stroke-opacity", 0.1);
-            d3.select(this) // focus on active polygon
-                .transition(500)
-                .attr("fill-opacity", 0.7)
-                .attr("stroke-opacity", config.polygonStrokeOpacity);
-            vis.yearLabel //cambiar texto central
-                .text(d.group);
-          })
-          .on(out, function() {
-            d3.selectAll(".polygon-areas")
-                .transition(500)
-                .attr("fill-opacity", config.polygonAreaOpacity)
-                .attr("stroke-opacity", 1);
-            vis.yearLabel //cambiar texto central
-                .text("");
-          });
     }
 
 
